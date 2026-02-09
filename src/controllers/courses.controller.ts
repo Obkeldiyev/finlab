@@ -88,6 +88,7 @@ export class CoursesController {
         description_uz,
         start_date,
         ends_at,
+        hours,
         direction_id,
       } = req.body;
 
@@ -138,6 +139,7 @@ export class CoursesController {
           description_uz,
           start_date: start,
           ends_at: end,
+          hours: hours ? Number(hours) : 40,
           direction: { connect: { id: dir.id } },
         },
         include: { direction: true },
@@ -175,6 +177,7 @@ export class CoursesController {
         description_uz,
         start_date,
         ends_at,
+        hours,
         direction_id,
       } = req.body;
 
@@ -208,6 +211,7 @@ export class CoursesController {
           description_uz,
           start_date: start,
           ends_at: end,
+          hours: hours ? Number(hours) : undefined,
           direction: direction_id ? { connect: { id: Number(direction_id) } } : undefined,
         },
         include: { direction: true },

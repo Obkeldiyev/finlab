@@ -85,6 +85,7 @@ model Courses {
     published_at   DateTime @default(now())
     start_date     DateTime
     ends_at        DateTime
+    hours          Int    @default(40)
     direction_id   Int
     direction      direction @relation(fields: [direction_id], references: [id])
     users          User[]
