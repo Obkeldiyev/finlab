@@ -28,22 +28,30 @@ const storage = multer.diskStorage({
   },
 });
 
-// allow only images + videos (you can expand)
+// Allow only images and videos with specific formats
 function fileFilter(
   req: Express.Request,
   file: Express.Multer.File,
   cb: multer.FileFilterCallback,
 ) {
-  const ok = file.mimetype.startsWith("image/") || file.mimetype.startsWith("video/");
-  if (!ok) return cb(new Error("Only image/* and video/* files are allowed"));
-  cb(null, true);
+  const allowedImageTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+  const allowedVideoTypes = ['video/mp4', 'video/mpeg', 'video/quicktime', 'video/x-msvideo', 'video/webm'];
+  
+  const isImage = allowedImageTypes.includes(file.mimetype);
+  const isVideo = allowedVideoTypes.includes(file.mimetype);
+  
+  if (isImage || isVideo) {
+    cb(null, true);
+  } else {
+    cb(new Error(`Only images (JPEG, PNG, GIF, WebP) and videos (MP4, MPEG, MOV, AVI, WebM) are allowed. Received: ${file.mimetype}`));
+  }
 }
 
 export const uploadNewsMedia = multer({
   storage,
   fileFilter,
   limits: {
-    fileSize: 20 * 1024 * 1024, // 20MB per file
+    fileSize: 50 * 1024 * 1024, // 50MB per file (increased from 20MB)
     files: 10, // max 10 files
   },
 });
