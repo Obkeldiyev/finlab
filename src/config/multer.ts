@@ -51,7 +51,7 @@ export const uploadNewsMedia = multer({
   storage,
   fileFilter,
   limits: {
-    fileSize: 50 * 1024 * 1024, // 50MB per file (increased from 20MB)
-    files: 10, // max 10 files
+    fileSize: 500 * 1024 * 1024, // 500MB per file
+    files: 50, // max 50 files
   },
 });
