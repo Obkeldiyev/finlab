@@ -8,12 +8,31 @@ function ensureDir(dir: string) {
 
 const UPLOAD_ROOT = path.join(process.cwd(), "uploads");
 const NEWS_DIR = path.join(UPLOAD_ROOT, "news");
+const GALLERY_DIR = path.join(UPLOAD_ROOT, "gallery");
 
 ensureDir(NEWS_DIR);
+ensureDir(GALLERY_DIR);
 
-const storage = multer.diskStorage({
+const newsStorage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, NEWS_DIR);
+  },
+  filename: (req, file, cb) => {
+    const ext = path.extname(file.originalname) || "";
+    const safeBase = path
+      .basename(file.originalname, ext)
+      .replace(/\s+/g, "-")
+      .replace(/[^a-zA-Z0-9-_]/g, "")
+      .slice(0, 60);
+
+    const unique = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
+    cb(null, `${safeBase || "file"}-${unique}${ext}`);
+  },
+});
+
+const galleryStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, GALLERY_DIR);
   },
   filename: (req, file, cb) => {
     const ext = path.extname(file.originalname) || "";
@@ -48,10 +67,18 @@ function fileFilter(
 }
 
 export const uploadNewsMedia = multer({
-  storage,
+  storage: newsStorage,
   fileFilter,
   limits: {
     fileSize: 500 * 1024 * 1024, // 500MB per file
     files: 50, // max 50 files
+  },
+});
+
+export const uploadGalleryMedia = multer({
+  storage: galleryStorage,
+  fileFilter,
+  limits: {
+    fileSize: 500 * 1024 * 1024, // 500MB per file
   },
 });

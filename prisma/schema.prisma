@@ -104,3 +104,13 @@ model direction {
     courses        Courses[]
     users          User[]
 }
+
+model Gallery {
+    id           Int      @id @default(autoincrement())
+    title_en     String
+    title_ru     String
+    title_uz     String
+    url          String
+    type         String   // "image" or "video"
+    created_at   DateTime @default(now())
+}
