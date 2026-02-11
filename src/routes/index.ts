@@ -6,6 +6,8 @@ import { elonRoutes } from "./elon.routes";
 import { coursesRoutes } from "./courses.routes";
 import { directionRoutes } from "./direction.routes";
 import { galleryRoutes } from "./gallery.routes";
+import { partnerRoutes } from "./partner.routes";
+import { feedbackRoutes } from "./feedback.routes";
 
 const router: Router = Router();
 
@@ -16,5 +18,7 @@ router.use("/elon", elonRoutes)
 router.use("/courses", coursesRoutes);
 router.use("/direction", directionRoutes);
 router.use("/gallery", galleryRoutes);
+router.use("/partners", partnerRoutes);
+router.use("/feedback", feedbackRoutes);
 
 export default router;

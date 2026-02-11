@@ -112,3 +112,19 @@ model Gallery {
     type       String   // "image" or "video"
     created_at DateTime @default(now())
 }
+
+model Partner {
+    id         Int      @id @default(autoincrement())
+    name       String
+    logo_url   String
+    website_url String
+    created_at DateTime @default(now())
+}
+
+model Feedback {
+    id          Int      @id @default(autoincrement())
+    phone_number String
+    email       String
+    message     String   @db.Text
+    created_at  DateTime @default(now())
+}
