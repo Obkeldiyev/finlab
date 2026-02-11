@@ -66,12 +66,12 @@ export class GalleryController {
 
   static async createGallery(req: Request, res: Response, next: NextFunction) {
     try {
-      const { title_en, title_ru, title_uz } = req.body;
-
-      if (!title_en || !title_ru || !title_uz) {
+      const { title } = req.body;
+      
+      if (!title) {
         return res.status(400).send({
           success: false,
-          message: "All title fields are required",
+          message: "Title is required",
         });
       }
 
@@ -85,9 +85,7 @@ export class GalleryController {
 
       const created = await client.gallery.create({
         data: {
-          title_en,
-          title_ru,
-          title_uz,
+          title,
           url: publicUrlForFile(file.filename),
           type: mediaTypeFromMimetype(file.mimetype),
         },
@@ -115,14 +113,11 @@ export class GalleryController {
         return res.status(404).send({ success: false, message: "Gallery item not found" });
       }
 
-      const { title_en, title_ru, title_uz } = req.body;
+      const { title } = req.body;
       const file = req.file;
 
       const updateData: any = {};
-      if (title_en) updateData.title_en = title_en;
-      if (title_ru) updateData.title_ru = title_ru;
-      if (title_uz) updateData.title_uz = title_uz;
-      
+      if (title) updateData.title = title;
       if (file) {
         updateData.url = publicUrlForFile(file.filename);
         updateData.type = mediaTypeFromMimetype(file.mimetype);
