@@ -123,8 +123,12 @@ model Partner {
 
 model Feedback {
     id          Int      @id @default(autoincrement())
+    full_name   String
+    workplace   String
     phone_number String
     email       String
+    rating      Int      @default(5)
     message     String   @db.Text
+    is_approved Boolean  @default(false)
     created_at  DateTime @default(now())
 }
