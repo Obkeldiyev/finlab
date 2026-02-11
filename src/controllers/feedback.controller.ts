@@ -33,6 +33,23 @@ export class FeedbackController {
     }
   }
 
+  static async getApprovedFeedback(req: Request, res: Response, next: NextFunction) {
+    try {
+      const items = await client.feedback.findMany({
+        where: { is_approved: true },
+        orderBy: { created_at: "desc" },
+      });
+
+      res.status(200).send({
+        success: true,
+        message: "Approved feedback",
+        data: items,
+      });
+    } catch (error: any) {
+      next(new ErrorHandler(error.message, error.status));
+    }
+  }
+
   static async getOneFeedback(req: Request, res: Response, next: NextFunction) {
     try {
       const id = Number(req.params.id);
@@ -56,27 +73,61 @@ export class FeedbackController {
 
   static async createFeedback(req: Request, res: Response, next: NextFunction) {
     try {
-      const { phone_number, email, message } = req.body;
+      const { full_name, workplace, phone_number, email, rating, message } = req.body;
 
-      if (!phone_number || !email || !message) {
+      if (!full_name || !workplace || !phone_number || !email || !message) {
         return res.status(400).send({
           success: false,
-          message: "Phone number, email, and message are required",
+          message: "Full name, workplace, phone number, email, and message are required",
         });
       }
 
       const created = await client.feedback.create({
         data: {
+          full_name,
+          workplace,
           phone_number,
           email,
+          rating: rating || 5,
           message,
+          is_approved: false,
         },
       });
 
       res.status(201).send({
         success: true,
-        message: "Feedback submitted successfully",
+        message: "Feedback submitted successfully. It will be shown after approval.",
         data: created,
+      });
+    } catch (error: any) {
+      next(new ErrorHandler(error.message, error.status));
+    }
+  }
+
+  static async approveFeedback(req: Request, res: Response, next: NextFunction) {
+    try {
+      const id = Number(req.params.id);
+      if (Number.isNaN(id)) {
+        return res.status(400).send({ success: false, message: "Invalid id" });
+      }
+
+      const feedback = await client.feedback.findUnique({
+        where: { id },
+      });
+
+      if (!feedback) {
+        return res.status(404).send({ success: false, message: "Feedback not found" });
+      }
+
+      const updated = await client.feedback.update({
+        where: { id },
+        data: { is_approved: true },
+      });
+
+      res.status(200).send({
+        success: true,
+        message: "Feedback approved successfully",
+        data: updated,
       });
     } catch (error: any) {
       next(new ErrorHandler(error.message, error.status));
