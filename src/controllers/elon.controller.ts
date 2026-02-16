@@ -4,18 +4,17 @@ import { NextFunction, Request, Response } from "express";
 
 const client = new PrismaClient();
 
-function mediaTypeFromMime(mime: string) {
+function mediaTypeFromMimetype(mime: string) {
   if (mime.startsWith("image/")) return "image";
   if (mime.startsWith("video/")) return "video";
   return "file";
 }
 
-function publicElonUrl(filename: string) {
+function publicUrlForFile(filename: string) {
   return `/uploads/elon/${filename}`;
 }
 
 export class ElonController {
-  // ✅ GET /elon
   static async getAll(req: Request, res: Response, next: NextFunction) {
     try {
       const page = Number(req.query.page || 1);
@@ -34,7 +33,7 @@ export class ElonController {
 
       res.status(200).send({
         success: true,
-        message: "All elons",
+        message: "All announcements",
         page,
         limit,
         total,
@@ -45,7 +44,6 @@ export class ElonController {
     }
   }
 
-  // ✅ GET /elon/:id
   static async getOne(req: Request, res: Response, next: NextFunction) {
     try {
       const id = Number(req.params.id);
@@ -59,44 +57,23 @@ export class ElonController {
       });
 
       if (!elon) {
-        return res.status(404).send({ success: false, message: "Elon not found" });
+        return res.status(404).send({ success: false, message: "Announcement not found" });
       }
 
-      res.status(200).send({
-        success: true,
-        message: "One elon",
-        data: elon,
-      });
+      res.status(200).send({ success: true, message: "One announcement", data: elon });
     } catch (error: any) {
       next(new ErrorHandler(error.message, error.status));
     }
   }
 
-  // ✅ POST /elon  (multipart/form-data)
   static async create(req: Request, res: Response, next: NextFunction) {
     try {
-      const {
-        title_en,
-        title_ru,
-        title_uz,
-        content_en,
-        content_ru,
-        content_uz,
-        ends_at,
-      } = req.body;
+      const { title_en, title_ru, title_uz, content_en, content_ru, content_uz, ends_at } = req.body;
 
-      if (
-        !title_en ||
-        !title_ru ||
-        !title_uz ||
-        !content_en ||
-        !content_ru ||
-        !content_uz ||
-        !ends_at
-      ) {
+      if (!title_en || !title_ru || !title_uz || !content_en || !content_ru || !content_uz || !ends_at) {
         return res.status(400).send({
           success: false,
-          message: "All title_*, content_* and ends_at are required",
+          message: "All title_*, content_* and ends_at fields are required",
         });
       }
 
@@ -111,12 +88,11 @@ export class ElonController {
           content_ru,
           content_uz,
           ends_at: new Date(ends_at),
-
           medias: files.length
             ? {
                 create: files.map((f) => ({
-                  url: publicElonUrl(f.filename),
-                  type: mediaTypeFromMime(f.mimetype),
+                  url: publicUrlForFile(f.filename),
+                  type: mediaTypeFromMimetype(f.mimetype),
                 })),
               }
             : undefined,
@@ -126,7 +102,7 @@ export class ElonController {
 
       res.status(201).send({
         success: true,
-        message: "Elon created successfully",
+        message: "Announcement created successfully",
         data: created,
       });
     } catch (error: any) {
@@ -134,7 +110,6 @@ export class ElonController {
     }
   }
 
-  // ✅ PATCH /elon/:id  (multipart/form-data)
   static async update(req: Request, res: Response, next: NextFunction) {
     try {
       const id = Number(req.params.id);
@@ -144,19 +119,10 @@ export class ElonController {
 
       const exists = await client.elon.findUnique({ where: { id } });
       if (!exists) {
-        return res.status(404).send({ success: false, message: "Elon not found" });
+        return res.status(404).send({ success: false, message: "Announcement not found" });
       }
 
-      const {
-        title_en,
-        title_ru,
-        title_uz,
-        content_en,
-        content_ru,
-        content_uz,
-        ends_at,
-      } = req.body;
-
+      const { title_en, title_ru, title_uz, content_en, content_ru, content_uz, ends_at } = req.body;
       const files = (req.files as Express.Multer.File[]) || [];
 
       const updated = await client.elon.update({
@@ -169,13 +135,12 @@ export class ElonController {
           content_ru,
           content_uz,
           ends_at: ends_at ? new Date(ends_at) : undefined,
-
           medias: files.length
             ? {
                 deleteMany: {},
                 create: files.map((f) => ({
-                  url: publicElonUrl(f.filename),
-                  type: mediaTypeFromMime(f.mimetype),
+                  url: publicUrlForFile(f.filename),
+                  type: mediaTypeFromMimetype(f.mimetype),
                 })),
               }
             : undefined,
@@ -185,7 +150,7 @@ export class ElonController {
 
       res.status(200).send({
         success: true,
-        message: "Elon updated successfully",
+        message: "Announcement updated successfully",
         data: updated,
       });
     } catch (error: any) {
@@ -193,7 +158,6 @@ export class ElonController {
     }
   }
 
-  // ✅ DELETE /elon/:id
   static async delete(req: Request, res: Response, next: NextFunction) {
     try {
       const id = Number(req.params.id);
@@ -207,18 +171,16 @@ export class ElonController {
       });
 
       if (!elon) {
-        return res.status(404).send({ success: false, message: "Elon not found" });
+        return res.status(404).send({ success: false, message: "Announcement not found" });
       }
 
       await client.elonMedia.deleteMany({ where: { elonId: id } });
       await client.elon.delete({ where: { id } });
 
-      res.status(200).send({
-        success: true,
-        message: "Elon deleted successfully",
-      });
+      res.status(200).send({ success: true, message: "Announcement deleted successfully" });
     } catch (error: any) {
       next(new ErrorHandler(error.message, error.status));
     }
   }
 }
+
